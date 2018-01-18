@@ -8,7 +8,7 @@ import { assert } from "chai";
 import WebService from "../src/services/webService";
 
 describe("WebService", () => {
-  it("key=value", () => {
+  it("init", () => {
     const conf = { url: "localhost" };
     const webservice = new WebService(conf);
     assert.isObject(webservice, "webservice is null");
