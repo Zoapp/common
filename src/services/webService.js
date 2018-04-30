@@ -10,7 +10,7 @@ export default class WebService {
   constructor(client, authService) {
     if (client && client.provider) {
       throw new Error("Provider authentification not implemented");
-    } else if ((!client) || (!client.url)) {
+    } else if (!client || !client.url) {
       throw new Error("WebClient not configured");
     }
     this.client = { ...client };
@@ -32,19 +32,21 @@ export default class WebService {
     const url = this.buildUrl(route);
     const clientId = this.authService.getClientId();
     return new Promise((resolve, reject) => {
-      if ((!isAuth) && auth) {
+      if (!isAuth && auth) {
         reject(new Error("not authenticated"));
       } else {
-        fetch(url, data, method, { client_id: clientId }).then((response) => {
-          const d = response.data;
-          if (d.error) {
-            reject(d.error);
-          } else {
-            resolve(d);
-          }
-        }).catch((error) => {
-          reject(error.message);
-        });
+        fetch(url, data, method, { client_id: clientId })
+          .then((response) => {
+            const d = response.data;
+            if (d.error) {
+              reject(d.error);
+            } else {
+              resolve(d);
+            }
+          })
+          .catch((error) => {
+            reject(error.message);
+          });
       }
     });
   }

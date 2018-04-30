@@ -56,7 +56,7 @@ export default class SocketService extends EventEmitter {
     });
     const that = this;
     this.interval = setInterval(() => {
-      if ((!that.socket) && (!that.running)) {
+      if (!that.socket && !that.running) {
         that.start();
       }
     }, 1000);
