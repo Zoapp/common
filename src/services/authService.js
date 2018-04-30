@@ -10,7 +10,12 @@ export default class AuthService {
   constructor(client) {
     if (client && client.provider) {
       throw new Error("Provider authentification not implemented");
-    } else if ((!client) || (!client.clientId) || (!client.clientSecret) || (!client.url)) {
+    } else if (
+      !client ||
+      !client.clientId ||
+      !client.clientSecret ||
+      !client.url
+    ) {
       throw new Error("AuthClient not configured");
     }
     this.client = { ...client };
@@ -70,7 +75,11 @@ export default class AuthService {
     const url = this.buildUrl(`${this.client.url}authorize`);
     // TODO password hashing
     return fetch(url, {
-      username, password, scope, client_id: this.client.clientId, redirect_uri: "localhost",
+      username,
+      password,
+      scope,
+      client_id: this.client.clientId,
+      redirect_uri: "localhost",
     });
   }
 
@@ -80,32 +89,42 @@ export default class AuthService {
     const url = this.buildUrl(`${this.client.url}access_token`);
     const that = this;
     return fetch(url, {
-      username, password, client_id: this.client.clientId, redirect_uri: "localhost", grant_type: "password",
-    }).then((response) => {
-      const session = response.data;
-      if (session.error) {
+      username,
+      password,
+      client_id: this.client.clientId,
+      redirect_uri: "localhost",
+      grant_type: "password",
+    })
+      .then((response) => {
+        const session = response.data;
+        if (session.error) {
+          that.resetAccess();
+          reject(session.error);
+        } else {
+          /* global window */
+          that.accessToken = session.access_token;
+          window.localStorage.setItem("access_token", that.accessToken);
+          that.expiresIn = session.expires_in;
+          window.localStorage.setItem("expires_in", that.expiresIn);
+          that.scope = session.scope;
+          window.localStorage.setItem("scope", that.scope);
+          that.authorized = true;
+          window.localStorage.setItem("authorized", "true");
+          resolve(that.getAttributes());
+        }
+      })
+      .catch((error) => {
         that.resetAccess();
-        reject(session.error);
-      } else {
-        /* global window */
-        that.accessToken = session.access_token;
-        window.localStorage.setItem("access_token", that.accessToken);
-        that.expiresIn = session.expires_in;
-        window.localStorage.setItem("expires_in", that.expiresIn);
-        that.scope = session.scope;
-        window.localStorage.setItem("scope", that.scope);
-        that.authorized = true;
-        window.localStorage.setItem("authorized", "true");
-        resolve(that.getAttributes());
-      }
-    }).catch((error) => {
-      that.resetAccess();
-      reject(error);
-    });
+        reject(error);
+      });
   }
 
   getAttributes() {
-    return { accessToken: this.accessToken, expiresIn: this.expiresIn, scope: this.scope };
+    return {
+      accessToken: this.accessToken,
+      expiresIn: this.expiresIn,
+      scope: this.scope,
+    };
   }
 
   resetAccess() {

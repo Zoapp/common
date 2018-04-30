@@ -10,4 +10,3 @@ import SocketService from "./services/socketService";
 import EventEmitter from "./utils/eventEmitter";
 
 export { AuthService, WebService, SocketService, EventEmitter };
-
