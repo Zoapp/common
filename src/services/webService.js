@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
-import fetch from "./fetch";
+import "whatwg-fetch";
 
 export default class WebService {
   constructor(client, authService) {
@@ -29,7 +29,6 @@ export default class WebService {
 
   send(route, data, method, auth) {
     const isAuth = this.authService.isAuthenticated();
-    const url = this.buildUrl(route);
     const clientId = this.authService.getClientId();
     return new Promise((resolve, reject) => {
       if (!isAuth && auth) {
