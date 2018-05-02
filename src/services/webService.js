@@ -32,7 +32,7 @@ export default class WebService {
     const clientId = this.authService.getClientId();
     const url = this.buildUrl(route);
 
-    if ((!isAuth) && auth) {
+    if (!isAuth && auth) {
       Promise.reject(new Error("not authenticated"));
     }
 
@@ -52,15 +52,14 @@ export default class WebService {
 
     config.headers = headers;
 
-    return fetch(url, config)
-      .then((response) => {
-        if (response.status >= 200 && response.status < 300) {
-          return response.json();
-        }
-        const error = new Error(response.statusText);
-        error.response = response;
-        return Promise.reject(error);
-      });
+    return fetch(url, config).then((response) => {
+      if (response.status >= 200 && response.status < 300) {
+        return response.json();
+      }
+      const error = new Error(response.statusText);
+      error.response = response;
+      return Promise.reject(error);
+    });
   }
 
   get(route, auth = true) {
