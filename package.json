@@ -1,6 +1,6 @@
 {
   "name": "zoapp-common",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Javascript ES7 common framework for Zoapp client / frontend apps",
   "author": "Mik BRY <mik@zoapp.com>",
   "license": "MIT",
