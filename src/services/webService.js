@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
-import fetch from "./fetch";
+import "whatwg-fetch";
 
 export default class WebService {
   constructor(client, authService) {
@@ -29,25 +29,36 @@ export default class WebService {
 
   send(route, data, method, auth) {
     const isAuth = this.authService.isAuthenticated();
-    const url = this.buildUrl(route);
     const clientId = this.authService.getClientId();
-    return new Promise((resolve, reject) => {
-      if (!isAuth && auth) {
-        reject(new Error("not authenticated"));
-      } else {
-        fetch(url, data, method, { client_id: clientId })
-          .then((response) => {
-            const d = response.data;
-            if (d.error) {
-              reject(d.error);
-            } else {
-              resolve(d);
-            }
-          })
-          .catch((error) => {
-            reject(error.message);
-          });
+    const url = this.buildUrl(route);
+
+    if (!isAuth && auth) {
+      Promise.reject(new Error("not authenticated"));
+    }
+
+    const headers = {
+      client_id: clientId,
+      Accept: "application/json",
+    };
+
+    const config = {
+      method,
+    };
+
+    if (data !== null) {
+      headers["Content-Type"] = "application/json";
+      config.body = JSON.stringify(data);
+    }
+
+    config.headers = headers;
+
+    return fetch(url, config).then((response) => {
+      if (response.status >= 200 && response.status < 300) {
+        return response.json();
       }
+      const error = new Error(response.statusText);
+      error.response = response;
+      return Promise.reject(error);
     });
   }
 
