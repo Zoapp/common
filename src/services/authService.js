@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
-import fetch from "./fetch";
+import "whatwg-fetch";
 
 export default class AuthService {
   constructor(client) {
@@ -63,59 +63,54 @@ export default class AuthService {
   authenticateUser({ username, password }) {
     // Authorization request
     // TODO password salt
-    const that = this;
-    const promise = new Promise((resolve, reject) => {
-      that.requestAccessToken({ username, password }, resolve, reject);
-    });
-    return promise;
-  }
-
-  authorizeAccess({ username, password, scope = null }) {
-    // console.log("WIP", "AuthService.authorizeAccess " + username);
-    const url = this.buildUrl(`${this.client.url}authorize`);
-    // TODO password hashing
-    return fetch(url, {
-      username,
-      password,
-      scope,
-      client_id: this.client.clientId,
-      redirect_uri: "localhost",
-    });
-  }
-
-  requestAccessToken({ username, password }, resolve, reject) {
     // console.log("WIP", `AuthService.requestAccessToken
     // ${username}${password} ${this.client.url}`);
     const url = this.buildUrl(`${this.client.url}access_token`);
     const that = this;
-    return fetch(url, {
+
+    const body = {
       username,
       password,
       client_id: this.client.clientId,
       redirect_uri: "localhost",
       grant_type: "password",
+    };
+
+    return fetch(url, {
+      body: JSON.stringify(body),
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
     })
       .then((response) => {
-        const session = response.data;
+        if (response.status >= 200 && response.status < 300) {
+          return response.json();
+        }
+        const error = new Error(response.statusText);
+        error.response = response;
+        that.resetAccess();
+        return Promise.reject(error);
+      })
+      .then((session) => {
         if (session.error) {
           that.resetAccess();
-          reject(session.error);
-        } else {
-          /* global window */
-          that.accessToken = session.access_token;
-          window.localStorage.setItem("access_token", that.accessToken);
-          that.expiresIn = session.expires_in;
-          window.localStorage.setItem("expires_in", that.expiresIn);
-          that.scope = session.scope;
-          window.localStorage.setItem("scope", that.scope);
-          that.authorized = true;
-          window.localStorage.setItem("authorized", "true");
-          resolve(that.getAttributes());
+          return Promise.reject(session.error);
         }
+        /* global window */
+        that.accessToken = session.access_token;
+        window.localStorage.setItem("access_token", that.accessToken);
+        that.expiresIn = session.expires_in;
+        window.localStorage.setItem("expires_in", that.expiresIn);
+        that.scope = session.scope;
+        window.localStorage.setItem("scope", that.scope);
+        that.authorized = true;
+        window.localStorage.setItem("authorized", "true");
+        return Promise.resolve(that.getAttributes());
       })
       .catch((error) => {
         that.resetAccess();
-        reject(error);
+        return Promise.reject(error);
       });
   }
 
