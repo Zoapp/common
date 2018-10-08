@@ -33,6 +33,7 @@
     "node": ">=8.5.0"
   },
   "dependencies": {
+    "url-parse": "^1.4.3",
     "whatwg-fetch": "^2.0.4",
     "winston": "2.4.0"
   },
