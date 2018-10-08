@@ -67,7 +67,7 @@ export default class AuthService {
     // TODO password salt
     // console.log("WIP", `AuthService.requestAccessToken
     // ${username}${password} ${this.client.url}`);
-    const url = this.urlBuilder.createUrl(`access_token/`);
+    const url = this.urlBuilder.createUrl("access_token/");
     const that = this;
 
     const body = {
