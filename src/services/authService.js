@@ -5,6 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 import "whatwg-fetch";
+import UrlBuilder from "../utils/urlBuilder";
 
 export default class AuthService {
   constructor(client) {
@@ -19,6 +20,7 @@ export default class AuthService {
       throw new Error("AuthClient not configured");
     }
     this.client = { ...client };
+    this.urlBuilder = new UrlBuilder(client.url);
     this.resetAttributes();
     this.needToLoad = true;
   }
@@ -65,7 +67,7 @@ export default class AuthService {
     // TODO password salt
     // console.log("WIP", `AuthService.requestAccessToken
     // ${username}${password} ${this.client.url}`);
-    const url = this.buildUrl(`${this.client.url}access_token`);
+    const url = this.urlBuilder.createUrl("access_token/");
     const that = this;
 
     const body = {
@@ -131,29 +133,16 @@ export default class AuthService {
     window.localStorage.removeItem("scope");
   }
 
-  buildUrl(url, protocol) {
-    const p = this.getProtocol(protocol);
-    return `${p}://${url}`;
-  }
-
-  getProtocol(protocol = "http") {
-    let p = protocol;
-    if (this.client.secure) {
-      p += "s";
-    }
-    return p;
-  }
-
-  buildAuthUrl(url, protocol) {
+  buildAuthUrl(url) {
     if (this.isAuthenticated()) {
       let n = "?access_token=";
       if (url.indexOf("?") > -1) {
         n = "&access_token=";
       }
 
-      return this.buildUrl(url, protocol) + n + this.accessToken;
+      return url + n + this.accessToken;
     }
     // TODO check if auth is ok
-    return this.buildUrl(url, protocol);
+    return url;
   }
 }

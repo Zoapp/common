@@ -6,6 +6,8 @@
  */
 import "whatwg-fetch";
 
+import UrlBuilder from "../utils/urlBuilder";
+
 export default class WebService {
   constructor(client, authService) {
     if (client && client.provider) {
@@ -13,24 +15,25 @@ export default class WebService {
     } else if (!client || !client.url) {
       throw new Error("WebClient not configured");
     }
+    this.urlBuilder = new UrlBuilder(client.url);
     this.client = { ...client };
     this.authService = authService;
   }
 
-  createUrl(route) {
-    const url = this.client.url + route;
-    return url;
+  buildHttpUrl(route) {
+    const url = this.urlBuilder.createUrl(route);
+    return this.authService.buildAuthUrl(url.href);
   }
 
-  buildUrl(route, protocol = "http") {
-    const url = this.createUrl(route);
-    return this.authService.buildAuthUrl(url, protocol);
+  buildWsUrl(route) {
+    const url = this.urlBuilder.createWsUrl(route);
+    return this.authService.buildAuthUrl(url.href);
   }
 
   send(route, data, method, auth) {
     const isAuth = this.authService.isAuthenticated();
     const clientId = this.authService.getClientId();
-    const url = this.buildUrl(route);
+    const url = this.buildHttpUrl(route);
 
     if (!isAuth && auth) {
       Promise.reject(new Error("not authenticated"));
