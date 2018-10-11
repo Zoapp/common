@@ -116,6 +116,42 @@ export default class AuthService {
       });
   }
 
+  createUser({ username, email, password, accept }) {
+    const url = this.urlBuilder.createUrl("user/");
+    const that = this;
+
+    const body = {
+      username,
+      email,
+      password,
+      accept,
+      client_id: this.client.clientId,
+    };
+    that.resetAccess();
+    return fetch(url, {
+      body: JSON.stringify(body),
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+    })
+      .then((response) => {
+        if (response.status >= 200 && response.status < 300) {
+          return response.json();
+        }
+        const error = new Error(response.statusText);
+        error.response = response;
+        return Promise.reject(error);
+      })
+      .then((session) => {
+        if (session.error) {
+          return Promise.reject(session.error);
+        }
+        return Promise.resolve(session);
+      })
+      .catch((error) => Promise.reject(error));
+  }
+
   getAttributes() {
     return {
       accessToken: this.accessToken,
