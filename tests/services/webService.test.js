@@ -18,7 +18,7 @@ describe("webService", () => {
     it("should return valid data", async () => {
       AuthService.mockImplementation(() => ({
         isAuthenticated: () => true,
-        buildAuthUrl: url => url,
+        buildAuthUrl: (url) => url,
         getClientId: () => 42,
       }));
 
@@ -31,7 +31,7 @@ describe("webService", () => {
     it("should throw an error if status is different than 200", async () => {
       AuthService.mockImplementation(() => ({
         isAuthenticated: () => true,
-        buildAuthUrl: url => url,
+        buildAuthUrl: (url) => url,
         getClientId: () => 42,
       }));
 
@@ -50,7 +50,7 @@ describe("webService", () => {
     it("should create a valid post request", async () => {
       AuthService.mockImplementation(() => ({
         isAuthenticated: () => true,
-        buildAuthUrl: url => url,
+        buildAuthUrl: (url) => url,
         getClientId: () => 42,
       }));
 
@@ -72,7 +72,7 @@ describe("webService", () => {
     it("should create a valid put request", async () => {
       AuthService.mockImplementation(() => ({
         isAuthenticated: () => true,
-        buildAuthUrl: url => url,
+        buildAuthUrl: (url) => url,
         getClientId: () => 42,
       }));
 
@@ -95,7 +95,7 @@ describe("webService", () => {
     it("should create a valid delete request", async () => {
       AuthService.mockImplementation(() => ({
         isAuthenticated: () => true,
-        buildAuthUrl: url => url,
+        buildAuthUrl: (url) => url,
         getClientId: () => 42,
       }));
 

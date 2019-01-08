@@ -62,13 +62,12 @@ export default class AuthService {
     return this.client.clientId;
   }
 
-  authenticateUser({ username, password }) {
+  async authenticateUser({ username, password }) {
     // Authorization request
     // TODO password salt
     // console.log("WIP", `AuthService.requestAccessToken
     // ${username}${password} ${this.client.url}`);
     const url = this.urlBuilder.createUrl("access_token/");
-    const that = this;
 
     const body = {
       username,
@@ -78,47 +77,44 @@ export default class AuthService {
       grant_type: "password",
     };
 
-    return fetch(url, {
-      body: JSON.stringify(body),
-      headers: {
-        "content-type": "application/json",
-      },
-      method: "POST",
-    })
-      .then((response) => {
-        if (response.status >= 200 && response.status < 300) {
-          return response.json();
-        }
+    try {
+      const response = await fetch(url, {
+        body: JSON.stringify(body),
+        headers: {
+          "content-type": "application/json",
+        },
+        method: "POST",
+      });
+      if (response.status < 200 || response.status > 300) {
         const error = new Error(response.statusText);
         error.response = response;
-        that.resetAccess();
-        return Promise.reject(error);
-      })
-      .then((session) => {
-        if (session.error) {
-          that.resetAccess();
-          return Promise.reject(session.error);
-        }
-        /* global window */
-        that.accessToken = session.access_token;
-        window.localStorage.setItem("access_token", that.accessToken);
-        that.expiresIn = session.expires_in;
-        window.localStorage.setItem("expires_in", that.expiresIn);
-        that.scope = session.scope;
-        window.localStorage.setItem("scope", that.scope);
-        that.authorized = true;
-        window.localStorage.setItem("authorized", "true");
-        return Promise.resolve(that.getAttributes());
-      })
-      .catch((error) => {
-        that.resetAccess();
-        return Promise.reject(error);
-      });
+        this.resetAccess();
+        throw error;
+      }
+
+      const session = await response.json();
+      if (session.error) {
+        this.resetAccess();
+        throw session.error;
+      }
+
+      this.accessToken = session.access_token;
+      window.localStorage.setItem("access_token", this.accessToken);
+      this.expiresIn = session.expires_in;
+      window.localStorage.setItem("expires_in", this.expiresIn);
+      this.scope = session.scope;
+      window.localStorage.setItem("scope", this.scope);
+      this.authorized = true;
+      window.localStorage.setItem("authorized", "true");
+      return this.getAttributes();
+    } catch (error) {
+      this.resetAccess();
+      throw error;
+    }
   }
 
-  authorizeUser({ username, password, scope }) {
+  async authorizeUser({ username, password, scope }) {
     const url = this.urlBuilder.createUrl("authorize/");
-    const that = this;
 
     const body = {
       username,
@@ -126,34 +122,37 @@ export default class AuthService {
       scope,
       client_id: this.client.clientId,
     };
-    that.resetAccess();
-    return fetch(url, {
-      body: JSON.stringify(body),
-      headers: {
-        "content-type": "application/json",
-      },
-      method: "POST",
-    })
-      .then((response) => {
-        if (response.status >= 200 && response.status < 300) {
-          return response.json();
-        }
+    if (this.scope !== "admin") {
+      this.resetAccess();
+    }
+
+    try {
+      const response = await fetch(url, {
+        body: JSON.stringify(body),
+        headers: {
+          "content-type": "application/json",
+        },
+        method: "POST",
+      });
+      if (response.status < 200 || response.status > 300) {
         const error = new Error(response.statusText);
         error.response = response;
-        return Promise.reject(error);
-      })
-      .then((session) => {
-        if (session.error) {
-          return Promise.reject(session.error);
-        }
-        return Promise.resolve(session);
-      })
-      .catch((error) => Promise.reject(error));
+        throw error;
+      }
+
+      const session = await response.json();
+      if (session.error) {
+        throw session.error;
+      }
+
+      return session;
+    } catch (error) {
+      throw error;
+    }
   }
 
-  createUser({ username, email, password, accept }) {
+  async createUser({ username, email, password, accept }) {
     const url = this.urlBuilder.createUrl("user/");
-    const that = this;
 
     const body = {
       username,
@@ -162,29 +161,33 @@ export default class AuthService {
       accept,
       client_id: this.client.clientId,
     };
-    that.resetAccess();
-    return fetch(url, {
-      body: JSON.stringify(body),
-      headers: {
-        "content-type": "application/json",
-      },
-      method: "POST",
-    })
-      .then((response) => {
-        if (response.status >= 200 && response.status < 300) {
-          return response.json();
-        }
+    if (this.scope !== "admin") {
+      this.resetAccess();
+    }
+
+    try {
+      const response = await fetch(url, {
+        body: JSON.stringify(body),
+        headers: {
+          "content-type": "application/json",
+        },
+        method: "POST",
+      });
+      if (response.status < 200 || response.status > 300) {
         const error = new Error(response.statusText);
         error.response = response;
-        return Promise.reject(error);
-      })
-      .then((session) => {
-        if (session.error) {
-          return Promise.reject(session.error);
-        }
-        return Promise.resolve(session);
-      })
-      .catch((error) => Promise.reject(error));
+        throw error;
+      }
+
+      const session = await response.json();
+      if (session.error) {
+        throw session.error;
+      }
+
+      return session;
+    } catch (error) {
+      throw error;
+    }
   }
 
   getAttributes() {
