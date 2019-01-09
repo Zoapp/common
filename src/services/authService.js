@@ -122,7 +122,7 @@ export default class AuthService {
       scope,
       client_id: this.client.clientId,
     };
-    if (this.scope !== "admin") {
+    if (this.scope === null) {
       this.resetAccess();
     }
 
@@ -152,6 +152,11 @@ export default class AuthService {
   }
 
   async createUser({ username, email, password, accept }) {
+    if (this.scope === "owner") {
+      const error = new Error("Unauthorized");
+      error.status = 400;
+      throw error;
+    }
     const url = this.urlBuilder.createUrl("user/");
 
     const body = {
@@ -161,7 +166,7 @@ export default class AuthService {
       accept,
       client_id: this.client.clientId,
     };
-    if (this.scope !== "admin") {
+    if (this.scope === null) {
       this.resetAccess();
     }
 
