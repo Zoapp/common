@@ -30,13 +30,13 @@ export default class WebService {
     return this.authService.buildAuthUrl(url.href);
   }
 
-  send(route, data, method, auth) {
+  async send(route, data, method, auth) {
     const isAuth = this.authService.isAuthenticated();
     const clientId = this.authService.getClientId();
     const url = this.buildHttpUrl(route);
 
     if (!isAuth && auth) {
-      Promise.reject(new Error("not authenticated"));
+      throw new Error("not authenticated");
     }
 
     const headers = {
@@ -55,14 +55,18 @@ export default class WebService {
 
     config.headers = headers;
 
-    return fetch(url, config).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json();
+    try {
+      const response = await fetch(url, config);
+      if (response.status < 200 || response.status > 300) {
+        const error = new Error(response.statusText);
+        error.response = response;
+        throw error;
       }
-      const error = new Error(response.statusText);
-      error.response = response;
-      return Promise.reject(error);
-    });
+
+      return response.json();
+    } catch (error) {
+      throw error;
+    }
   }
 
   get(route, auth = true) {
