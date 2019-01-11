@@ -152,12 +152,8 @@ export default class AuthService {
   }
 
   async createUser({ username, email, password, accept }) {
-    if (this.scope === "owner") {
-      const error = new Error("Unauthorized");
-      error.status = 400;
-      throw error;
-    }
-    const url = this.urlBuilder.createUrl("user/");
+    let url = this.urlBuilder.createUrl("user");
+    url = this.buildAuthUrl(url.href);
 
     const body = {
       username,
