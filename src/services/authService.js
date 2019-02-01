@@ -191,6 +191,40 @@ export default class AuthService {
     }
   }
 
+  async updateAccountState({ userId, newState }) {
+    let url = this.urlBuilder.createUrl("validate");
+    url = this.buildAuthUrl(url.href);
+
+    const body = {
+      userId,
+      newState,
+      client_id: this.client.clientId,
+    };
+    try {
+      const response = await fetch(url, {
+        body: JSON.stringify(body),
+        headers: {
+          "content-type": "application/json",
+        },
+        method: "POST",
+      });
+      if (response.status < 200 || response.status > 300) {
+        const error = new Error(response.statusText);
+        error.response = response;
+        throw error;
+      }
+
+      const session = await response.json();
+      if (session.error) {
+        throw session.error;
+      }
+
+      return session;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   getAttributes() {
     return {
       accessToken: this.accessToken,
