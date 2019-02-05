@@ -64,9 +64,17 @@ export default class AuthService {
 
   static async serializeError(response) {
     const res = (await response.json()).error;
+    // Simple error response like {"error":"Can't authenticate."}
+    let type = "error";
+    let message = res;
+
+    // More complexe error like {"error":{"message":"Can't authenticate.","type":"info"}}
+    if (res instanceof Object) {
+      ({ message, type } = res);
+    }
     const error = {
-      message: res ? res.message : response.statusText,
-      type: res ? res.type : "error",
+      message,
+      type,
       status: response.status,
     };
     throw error;
