@@ -41,7 +41,7 @@ describe("webService", () => {
       try {
         await webService.get("/404");
       } catch (error) {
-        expect(error.response.status).toEqual(404);
+        expect(error.status).toEqual(404);
       }
     });
   });

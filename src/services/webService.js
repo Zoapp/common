@@ -58,8 +58,12 @@ export default class WebService {
     try {
       const response = await fetch(url, config);
       if (response.status < 200 || response.status > 300) {
-        const error = new Error(response.statusText);
-        error.response = response;
+        const res = (await response.json()).error;
+        const error = {
+          message: res ? res.message : response.statusText,
+          type: res ? res.type : "error",
+          status: response.status,
+        };
         throw error;
       }
 

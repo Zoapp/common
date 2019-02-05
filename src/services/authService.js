@@ -62,6 +62,16 @@ export default class AuthService {
     return this.client.clientId;
   }
 
+  static async serializeError(response) {
+    const res = (await response.json()).error;
+    const error = {
+      message: res ? res.message : response.statusText,
+      type: res ? res.type : "error",
+      status: response.status,
+    };
+    throw error;
+  }
+
   async authenticateUser({ username, password }) {
     // Authorization request
     // TODO password salt
@@ -86,10 +96,8 @@ export default class AuthService {
         method: "POST",
       });
       if (response.status < 200 || response.status > 300) {
-        const error = new Error(response.statusText);
-        error.response = response;
         this.resetAccess();
-        throw error;
+        throw await AuthService.serializeError(response);
       }
 
       const session = await response.json();
@@ -135,9 +143,7 @@ export default class AuthService {
         method: "POST",
       });
       if (response.status < 200 || response.status > 300) {
-        const error = new Error(response.statusText);
-        error.response = response;
-        throw error;
+        throw await AuthService.serializeError(response);
       }
 
       const session = await response.json();
@@ -175,9 +181,7 @@ export default class AuthService {
         method: "POST",
       });
       if (response.status < 200 || response.status > 300) {
-        const error = new Error(response.statusText);
-        error.response = response;
-        throw error;
+        throw await AuthService.serializeError(response);
       }
 
       const session = await response.json();
@@ -209,9 +213,7 @@ export default class AuthService {
         method: "POST",
       });
       if (response.status < 200 || response.status > 300) {
-        const error = new Error(response.statusText);
-        error.response = response;
-        throw error;
+        throw await AuthService.serializeError(response);
       }
 
       const session = await response.json();
