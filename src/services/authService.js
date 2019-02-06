@@ -235,6 +235,36 @@ export default class AuthService {
     }
   }
 
+  async logoutUser() {
+    let url = this.urlBuilder.createUrl("logout");
+    url = this.buildAuthUrl(url.href);
+
+    const body = { client_id: this.client.clientId };
+
+    try {
+      const response = await fetch(url, {
+        body: JSON.stringify(body),
+        headers: {
+          "content-type": "application/json",
+        },
+        method: "POST",
+      });
+      this.resetAccess();
+      if (response.status < 200 || response.status > 300) {
+        throw await AuthService.serializeError(response);
+      }
+
+      const session = await response.json();
+      if (session.error) {
+        throw session.error;
+      }
+
+      return session;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   getAttributes() {
     return {
       accessToken: this.accessToken,
