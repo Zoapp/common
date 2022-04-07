@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "whatwg-fetch": "^2.0.4",
-    "winston": "2.4.0"
+    "winston": "3.3.0"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
